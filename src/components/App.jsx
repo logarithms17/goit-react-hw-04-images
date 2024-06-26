@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import SearchBar from "./SearchBar/SearchBar";
 import { getAPI } from "pixabay-api";
 import ImageGallery from './ImageGallery/ImageGallery';
@@ -7,30 +7,39 @@ import css from './App.module.css'
 import toast, { Toaster } from 'react-hot-toast';
 import { Circles } from 'react-loader-spinner';
 
-export class App extends Component {
-  state = {
-    search: '',
-    page: 1,
-    images: [],
-    isLoading: false,
-    isError: false,
-    isEnd: false,
-  };
+const App = () => {
 
-  componentDidUpdate = async (_prevProps, prevState) => {
-    const { search, page } = this.state
-    
-    if (prevState.search !== search || prevState.page !== page) {
-      await this.fetchImages(search, page)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [images, setImages] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isError, setIsError] = useState(false)
+  const [isEnd, setIsEnd] = useState(false)
+
+  useEffect(() => {
+    if (search === "") {
+      return
     }
-  }
 
-  fetchImages = async (search, page) => {
+    (async () => {
+      await fetchImages(search, page)
+    })();
+  
+    return () => {
+    }
+    // eslint-disable-next-line
+  }, [search, page])
+  
+  
+
+  const fetchImages = async (search, page) => {
     try {
-      this.setState({ isLoading: true })
+      setIsLoading(true)
       const fetchedImages = await getAPI(search, page)
 
       const { hits, totalHits } = fetchedImages
+      console.log(hits)
+      console.log(totalHits)
 
       if (hits.length === 0) {
         toast.error(`Sorry we cant find images matching your search query.`)
@@ -43,66 +52,61 @@ export class App extends Component {
       }
 
       if (page * 12 >= totalHits) {
-        this.setState({ isEnd: true })
+        setIsEnd(true)
         toast.error('Sorry you have reached the end of your search')
       }
       
 
-      this.setState(prevState => {
-        return {
-          images: [...prevState.images, ...hits]
-        }
+      setImages(prevState => {
+        return [...prevState, ...hits]
       })
-      
+      console.log(images)
+      console.log(hits)
+
     } catch {
-      this.setState({ isError: true })
+      setIsError(true)
     } finally {
-      this.setState(prevState => {
-        return { ...prevState, isLoading: false }
-      })
+      setIsLoading(false)
     }
   }
 
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault()
-    const { search } = this.state
     const searchedImage = e.target.search.value.trim().toLowerCase()
 
     console.log(searchedImage)
     if (searchedImage !== search) {
-      this.setState(prevState => {
-      return { ...prevState, search: searchedImage, page: 1, images: [], isEnd: false }
-    })
+      // this.setState(prevState => {
+      // return { ...prevState, search: searchedImage, page: 1, images: [], isEnd: false }
+      // })
+      setSearch(searchedImage)
+      setPage(1)
+      setImages([])
+      setIsEnd(false)
     }
 
     e.target.search.value = ''
   }
 
-  handleClick = e => {
+  const handleClick = e => {
     console.log(e.target)
 
-    this.setState(prevState => {
-      return { ...prevState, page: prevState.page + 1 }
+    setPage(prevState => {
+      return prevState + 1
     })
   }
-
-  
-
-  render() {
-    const { images, isLoading, isError, isEnd } = this.state
     
     return (
       <div className={css.App}>
-        <SearchBar handleSubmit={this.handleSubmit} />
+        <SearchBar handleSubmit={handleSubmit} />
         {images.length >= 1 && <ImageGallery images={images} />}
         {isLoading && <Circles height="80" width="80" color="#4fa94d" ariaLabel="circles-loading" wrapperStyle={{}} wrapperClass="" visible={true} />}
         {isError && toast.error("This didn't work.")}
-        {images.length >= 1 && !isEnd && <Button handleClick={this.handleClick} />}
-
-        
+        {images.length >= 1 && !isEnd && <Button handleClick={handleClick} />}
         <Toaster position="top-center" reverseOrder={false} />
       </div>
     )
-  }
+  
 }
 
+export default App

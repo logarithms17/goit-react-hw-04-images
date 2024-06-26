@@ -1,30 +1,33 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 import css from './ImageGalleryItem.module.css'
 import Modal from 'components/Modal/Modal'
+import PropTypes from 'prop-types';
 
-export default class ImageGalleryItem extends Component {
-    state = {
-        isOpen: false
+const ImageGalleryItem = ({ id, webformatURL, largeImageURL, tags }) => {
+
+    const [isOpen, setIsOpen] = useState(false)
+    
+    const imageClick = (e) => {
+        setIsOpen(true)
     }
-    imageClick = e => {
-
-        this.setState({isOpen: true})
+    
+    const closeButton = () => {
+        setIsOpen(false)
     }
-
-    closeButton = () => {
-        console.log('clicked')
-        this.setState({isOpen: false})
-    }
-
-    render() {
-        const { id, webformatURL, largeImageURL, tags } = this.props
-        const { isOpen } = this.state
 
     return (
         <li className={css.ImageGalleryItem}>
-            <img src={webformatURL} alt={tags} className={css.ImageGalleryItemImage} onClick={this.imageClick} id={id}/>
-            {isOpen && <Modal largeImageURL={largeImageURL} tags={tags} closeButton={this.closeButton} />}
+            <img src={webformatURL} alt={tags} className={css.ImageGalleryItemImage} onClick={imageClick} id={id}/>
+            {isOpen && <Modal largeImageURL={largeImageURL} tags={tags} closeButton={closeButton} />}
         </li>
     )
-} 
+}
+
+export default ImageGalleryItem
+
+ImageGalleryItem.propTypes = {
+    id: PropTypes.number.isRequired,
+    webformatURL: PropTypes.string.isRequired,
+    largeImageURL: PropTypes.string.isRequired,
+    tags: PropTypes.string.isRequired
 }

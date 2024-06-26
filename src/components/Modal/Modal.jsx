@@ -1,18 +1,22 @@
-import React, { Component } from 'react'
+import React from 'react'
 import css from './Modal.module.css'
+import PropTypes from 'prop-types'
 
-export default class Modal extends Component {
-
-    render() {
-    const {largeImageURL, tags, closeButton} = this.props
+export const Modal = ({largeImageURL, tags, closeButton}) => {
     return (
         <div className={css.Overlay}>
-        
-        <div className={css.Modal}>
-                <img src={largeImageURL} alt={tags} />
-                <button type='click' className={css.btnClose} onClick={closeButton}>X</button>
+            <div className={css.Modal}>
+                    <img src={largeImageURL} alt={tags} />
+                    <button type='click' className={css.btnClose} onClick={closeButton}>X</button>
+            </div>
         </div>
-    </div>
     )
-    }
+}
+
+export default Modal
+
+Modal.propTypes = {
+    largeImageURL: PropTypes.string.isRequired,
+    tags: PropTypes.string.isRequired,
+    closeButton: PropTypes.func.isRequired
 }
